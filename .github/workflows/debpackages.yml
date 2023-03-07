@@ -1,0 +1,26 @@
+name: 'dep packages'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 1 * * *'
+
+jobs:
+  build_job:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        ros_distro: [humble]
+    name: build_${{ matrix.ros_distro }}
+    runs-on: ubuntu-22.04
+    env:
+      repos_branch: ${{ matrix.ros_distro == 'rolling' && 'main' || matrix.ros_distro }}
+    steps:
+      - uses: jspricke/ros-deb-builder-action@main
+        with:
+          DEB_DISTRO: jammy
+          ROS_DISTRO: ${{ matrix.ros_distro }}
+          REPOS_FILE: https://raw.githubusercontent.com/orensbruli/robocomp2/main/robocomp.repos
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SQUASH_HISTORY: true
